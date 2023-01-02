@@ -26,7 +26,7 @@ if (gpsItems.Count > 0)
     Version version = assembly.GetName().Version;
     string creator = "Program Name " + version.ToString((version.Revision != 0) ? 3 : 2);
     int count = Gpmf.SaveGPX(videoFileName, gpxFileName, creator, Gpmf.GetDeviceName(gpmfItems), gpsItems);
-	Console.WriteLine("{0} GPS points saved to {1}.", count, Path.GetFileName(gpxFileName));
+    Console.WriteLine("{0} GPS points saved to {1}.", count, Path.GetFileName(gpxFileName));
 }
 else
 {
