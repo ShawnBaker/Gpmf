@@ -13,8 +13,11 @@
     <PackageTags>GPMF;GPX;MP4;GPS;GoPro</PackageTags>
     <PackageIcon>gpx.png</PackageIcon>
     <Copyright>Copyright © 2022 Shawn Baker</Copyright>
-    <Company>$(Authors)</Company>
+    <Company>Frozen North Computing</Company>
     <Authors>hezzle</Authors>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/ShawnBaker/Gpmf</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +30,10 @@
 
   <ItemGroup>
     <None Update="gpx.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
