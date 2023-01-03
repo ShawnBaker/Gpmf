@@ -5,6 +5,9 @@ using FFmpeg.AutoGen;
 
 namespace FrozenNorth.Gpmf
 {
+	/// <summary>
+	/// GPMF data parser.
+	/// </summary>
 	public static unsafe class GpmfParser
 	{
 		/// <summary>

@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace FrozenNorth.Gpmf
 {
+	/// <summary>
+	/// The size values of an item read from GPMF data.
+	/// </summary>
 	public class GpmfTypeSize
 	{
 		// instance variables

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace FrozenNorth.Gpmf
 {
+	/// <summary>
+	/// A GPS item read from GPMF data.
+	/// </summary>
 	public class GpsItem
 	{
 		// instance variables
@@ -45,5 +48,8 @@ namespace FrozenNorth.Gpmf
 		public string UnitsString => string.Join(",", Units);
 	}
 
+	/// <summary>
+	/// A list of GPS items read from GPMF data.
+	/// </summary>
 	public class GpsItems : List<GpsItem> { }
 }

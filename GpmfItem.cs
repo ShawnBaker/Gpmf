@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace FrozenNorth.Gpmf
 {
+	/// <summary>
+	/// An item read from GPMF data.
+	/// </summary>
 	public class GpmfItem
 	{
 		// instance variables
@@ -324,6 +327,9 @@ namespace FrozenNorth.Gpmf
 		#endregion
 	}
 
+	/// <summary>
+	/// A list of items read from GPMF data.
+	/// </summary>
 	public class GpmfItems : List<GpmfItem>
 	{
 		/// <summary>
@@ -335,6 +341,8 @@ namespace FrozenNorth.Gpmf
 		{
 			return Find(item => item.FourCC == fourcc);
 		}
+
+		#region String
 
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as a string.
@@ -358,6 +366,9 @@ namespace FrozenNorth.Gpmf
 			return (item != null) ? item.GetStringArray() : new string[0];
 		}
 
+		#endregion
+		#region Int
+
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as an int.
 		/// </summary>
@@ -379,6 +390,9 @@ namespace FrozenNorth.Gpmf
 			GpmfItem item = Find(fourcc);
 			return (item != null) ? item.GetIntArray() : new int[0];
 		}
+
+		#endregion
+		#region UInt
 
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as an uint.
@@ -402,6 +416,9 @@ namespace FrozenNorth.Gpmf
 			return (item != null) ? item.GetUIntArray() : new uint[0];
 		}
 
+		#endregion
+		#region Short
+
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as a short.
 		/// </summary>
@@ -423,6 +440,9 @@ namespace FrozenNorth.Gpmf
 			GpmfItem item = Find(fourcc);
 			return (item != null) ? item.GetShortArray() : new short[0];
 		}
+
+		#endregion
+		#region UShort
 
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as a ushort.
@@ -446,6 +466,9 @@ namespace FrozenNorth.Gpmf
 			return (item != null) ? item.GetUShortArray() : new ushort[0];
 		}
 
+		#endregion
+		#region Long
+
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as a long.
 		/// </summary>
@@ -467,6 +490,9 @@ namespace FrozenNorth.Gpmf
 			GpmfItem item = Find(fourcc);
 			return (item != null) ? item.GetLongArray() : new long[0];
 		}
+
+		#endregion
+		#region ULong
 
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as a ulong.
@@ -490,6 +516,9 @@ namespace FrozenNorth.Gpmf
 			return (item != null) ? item.GetULongArray() : new ulong[0];
 		}
 
+		#endregion
+		#region DateTime
+
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code and returns its payload as a DateTime.
 		/// </summary>
@@ -500,6 +529,8 @@ namespace FrozenNorth.Gpmf
 			GpmfItem item = Find(fourcc);
 			return (item != null) ? item.GetDateTime() : DateTime.MinValue;
 		}
+
+		#endregion
 
 		/// <summary>
 		/// Recursively get all items with a specific FourCC code.
