@@ -7,6 +7,9 @@ using FFmpeg.AutoGen;
 
 namespace FrozenNorth.Gpmf
 {
+	/// <summary>
+	/// High level GPMF operations.
+	/// </summary>
 	public static unsafe class Gpmf
 	{
 		/// <summary>
@@ -153,5 +156,63 @@ namespace FrozenNorth.Gpmf
 			return numCoords;
 		}
 
+		/// <summary>
+		/// Loads the GPS data from a GPX file.
+		/// </summary>
+		/// <param name="fileName">Full path and name of the GPX file.</param>
+		/// <returns>Combined GPX tracks and points.</returns>
+		public static GpxTrack LoadGPX(string fileName)
+		{
+			GpxTrack track = new GpxTrack();
+			XmlDocument doc = new XmlDocument();
+			doc.Load(fileName);
+			var ns = new XmlNamespaceManager(doc.NameTable);
+			ns.AddNamespace("ns", "http://www.topografix.com/GPX/1/1");
+
+			var trkNodes = doc.SelectNodes("//ns:trk", ns);
+			foreach (XmlNode trkNode in trkNodes)
+			{
+				if (string.IsNullOrEmpty(track.Name))
+				{
+					XmlNode nameNode = trkNode.SelectSingleNode("ns:name", ns);
+					if (nameNode != null)
+					{
+						track.Name = nameNode.InnerText;
+					}
+				}
+				if (string.IsNullOrEmpty(track.Description))
+				{
+					XmlNode descriptionNode = trkNode.SelectSingleNode("ns:desc", ns);
+					if (descriptionNode != null)
+					{
+						track.Description = descriptionNode.InnerText;
+					}
+				}
+				if (string.IsNullOrEmpty(track.Source))
+				{
+					XmlNode sourceNode = trkNode.SelectSingleNode("ns:src", ns);
+					if (sourceNode != null)
+					{
+						track.Source = sourceNode.InnerText;
+					}
+				}
+				var ptNodes = trkNode.SelectNodes(".//ns:trkpt", ns);
+				foreach (XmlNode ptNode in ptNodes)
+				{
+					GpxPoint point = new GpxPoint();
+					var lat = ptNode.Attributes["lat"];
+					point.Latitude = (lat != null && double.TryParse(lat.InnerText, out double latitude)) ? latitude : 0;
+					var lon = ptNode.Attributes["lon"];
+					point.Longitude = (lon != null && double.TryParse(lon.InnerText, out double longitude)) ? longitude : 0;
+					XmlNode eleNode = ptNode.SelectSingleNode("ns:ele", ns);
+					point.Altitude = (eleNode != null && double.TryParse(eleNode.InnerText, out double altitude)) ? altitude : 0;
+					XmlNode timeNode = ptNode.SelectSingleNode("ns:time", ns);
+					point.Time = (timeNode != null && DateTime.TryParse(timeNode.InnerText, out DateTime time)) ? time : DateTime.MinValue;
+					track.Points.Add(point);
+				}
+			}
+
+			return track;
+		}
 	}
 }
