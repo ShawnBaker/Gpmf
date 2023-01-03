@@ -1,4 +1,7 @@
-﻿namespace Gpmf
+﻿using System;
+using System.Collections.Generic;
+
+namespace FrozenNorth.Gpmf
 {
 	public class GpmfItem
 	{

@@ -1,6 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
-namespace Gpmf
+namespace FrozenNorth.Gpmf
 {
 	public class GpmfTypeSize
 	{

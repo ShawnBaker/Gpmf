@@ -1,4 +1,6 @@
-﻿namespace Gpmf
+﻿using System.Collections.Generic;
+
+namespace FrozenNorth.Gpmf
 {
 	public class GpsCoord
 	{

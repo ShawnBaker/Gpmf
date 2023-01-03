@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using FFmpeg.AutoGen;
 
-namespace Gpmf
+namespace FrozenNorth.Gpmf
 {
 	public static unsafe class GpmfParser
 	{
@@ -13,7 +14,7 @@ namespace Gpmf
 		/// <returns>List of GPMF items.</returns>
 		public static GpmfItems GetItems(AVPacket packet)
 		{
-			IntPtr ptr = (nint)packet.data;
+			IntPtr ptr = (IntPtr)packet.data;
 			return GetItems(ref ptr, packet.size);
 		}
 
@@ -78,7 +79,10 @@ namespace Gpmf
 						doubles[i] = ReadDouble(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 8);
-					return doubles.Length > 1 ? doubles : doubles[0];
+					if (doubles.Length > 1)
+						return doubles;
+					else
+						return doubles[0];
 				case 'f': // float32
 					n = item.TypeSize.Size / 4;
 					float[] singles = new float[n];
@@ -87,7 +91,10 @@ namespace Gpmf
 						singles[i] = ReadFloat(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 4);
-					return singles.Length > 1 ? singles : singles[0];
+					if (singles.Length > 1)
+						return singles;
+					else
+						return singles[0];
 				case 'b': // int8
 					n = item.TypeSize.Size;
 					sbyte[] sbytes = new sbyte[n];
@@ -97,7 +104,10 @@ namespace Gpmf
 						ptr += 1;
 					}
 					ptr += item.TypeSize.RoundedSize - item.TypeSize.Size;
-					return sbytes.Length > 1 ? sbytes : sbytes[0];
+					if (sbytes.Length > 1)
+						return sbytes;
+					else
+						return sbytes[0];
 				case 'B': // uint8
 					n = item.TypeSize.Size;
 					byte[] bytes = new byte[n];
@@ -107,7 +117,10 @@ namespace Gpmf
 						ptr += 1;
 					}
 					ptr += item.TypeSize.RoundedSize - item.TypeSize.Size;
-					return bytes.Length > 1 ? bytes : bytes[0];
+					if (bytes.Length > 1)
+						return bytes;
+					else
+						return bytes[0];
 				case 's': // int16
 					n = item.TypeSize.Size / 2;
 					short[] shorts = new short[n];
@@ -116,7 +129,10 @@ namespace Gpmf
 						shorts[i] = ReadInt16(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 2);
-					return shorts.Length > 1 ? shorts : shorts[0];
+					if (shorts.Length > 1)
+						return shorts;
+					else
+						return shorts[0];
 				case 'S': // uint16
 					n = item.TypeSize.Size / 2;
 					ushort[] ushorts = new ushort[n];
@@ -125,7 +141,10 @@ namespace Gpmf
 						ushorts[i] = ReadUInt16(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 2);
-					return ushorts.Length > 1 ? ushorts : ushorts[0];
+					if (ushorts.Length > 1)
+						return ushorts;
+					else
+						return ushorts[0];
 				case 'l': // int32
 					n = item.TypeSize.Size / 4;
 					int[] ints = new int[n];
@@ -134,7 +153,10 @@ namespace Gpmf
 						ints[i] = ReadInt32(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 4);
-					return ints.Length > 1 ? ints : ints[0];
+					if (ints.Length > 1)
+						return ints;
+					else
+						return ints[0];
 				case 'L': // uint32
 					n = item.TypeSize.Size / 4;
 					uint[] uints = new uint[n];
@@ -143,7 +165,10 @@ namespace Gpmf
 						uints[i] = ReadUInt32(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 4);
-					return uints.Length > 1 ? uints : uints[0];
+					if (uints.Length > 1)
+						return uints;
+					else
+						return uints[0];
 				case 'j': // int64
 					n = item.TypeSize.Size / 8;
 					long[] longs = new long[n];
@@ -152,7 +177,10 @@ namespace Gpmf
 						longs[i] = ReadInt64(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 8);
-					return longs.Length > 1 ? longs : longs[0];
+					if (longs.Length > 1)
+						return longs;
+					else
+						return longs[0];
 				case 'J': // uint64
 					n = item.TypeSize.Size / 8;
 					ulong[] ulongs = new ulong[n];
@@ -161,7 +189,10 @@ namespace Gpmf
 						ulongs[i] = ReadUInt64(ref ptr);
 					}
 					ptr += item.TypeSize.RoundedSize - (n * 8);
-					return ulongs.Length > 1 ? ulongs : ulongs[0];
+					if (ulongs.Length > 1)
+						return ulongs;
+					else
+						return ulongs[0];
 				case 'U':
 					string dt = ReadString(ref ptr, item.TypeSize.Size);
 					ptr += item.TypeSize.RoundedSize - item.TypeSize.Size;
@@ -187,7 +218,7 @@ namespace Gpmf
 		/// <returns>16 bit signed integer.</returns>
 		public static short ReadInt16(ref IntPtr ptr)
 		{
-			return BitConverter.ToInt16(ReadBytesReverse(ref ptr, 2));
+			return BitConverter.ToInt16(ReadBytesReverse(ref ptr, 2), 0);
 		}
 
 		/// <summary>
@@ -197,7 +228,7 @@ namespace Gpmf
 		/// <returns>16 bit unsigned integer.</returns>
 		public static ushort ReadUInt16(ref IntPtr ptr)
 		{
-			return BitConverter.ToUInt16(ReadBytesReverse(ref ptr, 2));
+			return BitConverter.ToUInt16(ReadBytesReverse(ref ptr, 2), 0);
 		}
 
 		/// <summary>
@@ -207,7 +238,7 @@ namespace Gpmf
 		/// <returns>32 bit signed integer.</returns>
 		public static int ReadInt32(ref IntPtr ptr)
 		{
-			return BitConverter.ToInt32(ReadBytesReverse(ref ptr, 4));
+			return BitConverter.ToInt32(ReadBytesReverse(ref ptr, 4), 0);
 		}
 
 		/// <summary>
@@ -217,7 +248,7 @@ namespace Gpmf
 		/// <returns>32 bit unsigned integer.</returns>
 		public static uint ReadUInt32(ref IntPtr ptr)
 		{
-			return BitConverter.ToUInt32(ReadBytesReverse(ref ptr, 4));
+			return BitConverter.ToUInt32(ReadBytesReverse(ref ptr, 4), 0);
 		}
 
 		/// <summary>
@@ -227,7 +258,7 @@ namespace Gpmf
 		/// <returns>64 bit signed integer.</returns>
 		public static long ReadInt64(ref IntPtr ptr)
 		{
-			return BitConverter.ToInt64(ReadBytesReverse(ref ptr, 8));
+			return BitConverter.ToInt64(ReadBytesReverse(ref ptr, 8), 0);
 		}
 
 		/// <summary>
@@ -237,7 +268,7 @@ namespace Gpmf
 		/// <returns>64 bit unsigned integer.</returns>
 		public static ulong ReadUInt64(ref IntPtr ptr)
 		{
-			return BitConverter.ToUInt64(ReadBytesReverse(ref ptr, 8));
+			return BitConverter.ToUInt64(ReadBytesReverse(ref ptr, 8), 0);
 		}
 
 		/// <summary>
@@ -247,7 +278,7 @@ namespace Gpmf
 		/// <returns>32 bit floating point number.</returns>
 		public static float ReadFloat(ref IntPtr ptr)
 		{
-			return BitConverter.ToSingle(ReadBytesReverse(ref ptr, 4));
+			return BitConverter.ToSingle(ReadBytesReverse(ref ptr, 4), 0);
 		}
 
 		/// <summary>
@@ -257,7 +288,7 @@ namespace Gpmf
 		/// <returns>64 bit floating point number.</returns>
 		public static double ReadDouble(ref IntPtr ptr)
 		{
-			return BitConverter.ToDouble(ReadBytesReverse(ref ptr, 8));
+			return BitConverter.ToDouble(ReadBytesReverse(ref ptr, 8), 0);
 		}
 
 		/// <summary>

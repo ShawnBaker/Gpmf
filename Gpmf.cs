@@ -1,10 +1,11 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using System.Xml;
 using FFmpeg.AutoGen;
-using Gpmf;
 
-namespace ExtractGPX
+namespace FrozenNorth.Gpmf
 {
 	public static unsafe class Gpmf
 	{

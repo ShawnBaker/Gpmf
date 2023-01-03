@@ -1,4 +1,7 @@
-﻿namespace Gpmf
+﻿using System;
+using System.Collections.Generic;
+
+namespace FrozenNorth.Gpmf
 {
 	public class GpsItem
 	{
@@ -39,7 +42,7 @@
 		/// <summary>
 		/// Gets the units as a comma separated string.
 		/// </summary>
-		public string UnitsString => string.Join(',', Units);
+		public string UnitsString => string.Join(",", Units);
 	}
 
 	public class GpsItems : List<GpsItem> { }
