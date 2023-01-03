@@ -158,6 +158,71 @@ namespace FrozenNorth.Gpmf
 			return earthRadiusKm * c;
 		}
 
+
+		/// <summary>
+		/// Gets enough points to draw an altitude graph.
+		/// </summary>
+		/// <returns>List of points.</returns>
+		public GpxPoints GetAltitudePoints()
+		{
+			return DouglasPeucker.Reduce(this, 0.5, AltitudeDistance);
+		}
+
+		/// <summary>
+		/// Gets the location at a specific time.
+		/// </summary>
+		/// <param name="offset">Offset into the timeline.</param>
+		/// <returns>Point and distance.</returns>
+		public (GpxPoint, double) LocationAtOffset(TimeSpan offset)
+		{
+			GpxPoint point = new GpxPoint();
+			double distance = 0;
+			if (Count> 0)
+			{
+				DateTime offsetTime = StartTime + offset;
+				int index = 0;
+				while (index < Count && this[index].Time < offsetTime)
+				{
+					if (index > 0)
+					{
+						distance += GpxPoints.DistanceBetweenPoints(this[index], this[index - 1]);
+					}
+					index++;
+				}
+				if (index == this.Count)
+				{
+					point = this[Count - 1].Clone();
+				}
+				else if (index == 0 || this[index].Time == offsetTime)
+				{
+					point = this[index].Clone();
+				}
+				else
+				{
+					point = this[index - 1].Clone();
+					double portion = (offsetTime - point.Time).TotalSeconds / (this[index].Time - point.Time).TotalSeconds;
+					point.Altitude += (this[index].Altitude - point.Altitude) * portion;
+					distance += GpxPoints.DistanceBetweenPoints(this[index], this[index - 1]) * portion;
+				}
+				point.Time = StartTime + offset;
+			}
+			return (point, distance);
+		}
+
+		/// <summary>
+		/// Used by the Douglas Peucker algorithm to compare altitude points.
+		/// </summary>
+		private double AltitudeDistance(GpxPoint point1, GpxPoint point2, GpxPoint point)
+		{
+			double time1 = (point1.Time - StartTime).TotalSeconds;
+			double time2 = (point2.Time - StartTime).TotalSeconds;
+			double time = (point.Time - StartTime).TotalSeconds;
+			double area = Math.Abs(.5 * (point1.Altitude * time2 + point2.Altitude * time + point.Altitude * time1 - point2.Altitude * time1 - point.Altitude * time2 - point1.Altitude * time));
+			double bottom = Math.Sqrt(Math.Pow(point1.Altitude - point2.Altitude, 2) + Math.Pow(time1 - time2, 2));
+			double height = area / bottom * 2;
+			return height;
+		}
+
 		/// <summary>
 		/// Converts degrees to radians.
 		/// </summary>
