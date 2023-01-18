@@ -9,8 +9,8 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ShawnBaker/Gpmf</RepositoryUrl>
     <PackageTags>GPMF;GPX;MP4;GPS;GoPro</PackageTags>
-    <PackageIcon>gpx.png</PackageIcon>
-    <Copyright>Copyright © 2022 Shawn Baker</Copyright>
+    <PackageIcon>gpmf.png</PackageIcon>
+    <Copyright>Copyright © 2022-2023 Shawn Baker</Copyright>
     <Company>Frozen North Computing</Company>
     <Authors>hezzle</Authors>
     <RepositoryType>git</RepositoryType>
@@ -22,12 +22,12 @@
 
   <ItemGroup>
     <None Remove=".gitignore" />
-    <None Remove="gpx.png" />
+    <None Remove="gpmf.png" />
     <None Remove="README.md" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="gpx.png">
+    <Content Include="gpmf.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen" Version="5.1.1" />
+    <PackageReference Include="FrozenNorth.Gpx" Version="1.0.0-rc" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
