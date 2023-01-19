@@ -332,6 +332,8 @@ namespace FrozenNorth.Gpmf
 	/// </summary>
 	public class GpmfItems : List<GpmfItem>
 	{
+		public TimeSpan Duration = TimeSpan.Zero;
+
 		/// <summary>
 		/// Searches for an item with a specifc FourCC code.
 		/// </summary>
