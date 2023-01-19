@@ -8,7 +8,7 @@ namespace FrozenNorth.Gpmf
 	/// <summary>
 	/// GPMF data parser.
 	/// </summary>
-	public static unsafe class GpmfParser
+	internal static unsafe class GpmfParser
 	{
 		/// <summary>
 		/// Gets a list of GPMF items from an AVPacket's data.

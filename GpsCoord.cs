@@ -2,10 +2,10 @@
 
 namespace FrozenNorth.Gpmf
 {
-	/// <summary>
-	/// A set of GPS coordinates read from GPMF data.
-	/// </summary>
-	public class GpsCoord
+    /// <summary>
+    /// A set of GPS coordinates read from GPMF data.
+    /// </summary>
+    internal class GpsCoord
 	{
 		// instance variables
 		public double Latitude;
@@ -32,8 +32,8 @@ namespace FrozenNorth.Gpmf
 		}
 	}
 
-	/// <summary>
-	/// A list of GPS coordinates read from GPMF data.
-	/// </summary>
-	public class GpsCoords : List<GpsCoord> { }
+    /// <summary>
+    /// A list of GPS coordinates read from GPMF data.
+    /// </summary>
+    internal class GpsCoords : List<GpsCoord> { }
 }
