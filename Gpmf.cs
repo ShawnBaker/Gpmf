@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using System.Xml;
 using FFmpeg.AutoGen;
+using FrozenNorth.Gpx;
 
 namespace FrozenNorth.Gpmf
 {
@@ -23,7 +21,8 @@ namespace FrozenNorth.Gpmf
 			AVFormatContext* formatContext = ffmpeg.avformat_alloc_context();
 			ffmpeg.avformat_open_input(&formatContext, fileName, null, null);
 			ffmpeg.avformat_find_stream_info(formatContext, null);
-			for (int i = 0; i < formatContext->nb_streams; i++)
+            gpmfItems.Duration = TimeSpan.FromSeconds((double)formatContext->duration / ffmpeg.AV_TIME_BASE);
+            for (int i = 0; i < formatContext->nb_streams; i++)
 			{
 				AVStream* stream = formatContext->streams[i];
 				if (stream->codecpar->codec_type == AVMediaType.AVMEDIA_TYPE_DATA)
@@ -56,8 +55,8 @@ namespace FrozenNorth.Gpmf
 		/// <returns>Device name.</returns>
 		public static string GetDeviceName(GpmfItems gpmfItems, string defaultName = "GoPro")
 		{
-			GpmfItems strmItems = gpmfItems.GetItems("DVNM");
-			foreach (GpmfItem item in strmItems)
+			GpmfItems dvnmItems = gpmfItems.GetItems("DVNM");
+			foreach (GpmfItem item in dvnmItems)
 			{
 				string name = item.GetString();
 				if (!string.IsNullOrEmpty(name))
@@ -69,12 +68,15 @@ namespace FrozenNorth.Gpmf
 		}
 
 		/// <summary>
-		/// Gets a list of all the GPS items with a list of GPMF items.
+		/// Gets a Gpx object representing the GPS items within a list of GPMF items.
 		/// </summary>
 		/// <param name="gpmfItems">List of GPMF items to search through.</param>
-		/// <returns>List of GPS items.</returns>
-		public static GpsItems GetGpsItems(GpmfItems gpmfItems)
+		/// <returns>Gpx object.</returns>
+		public static Gpx.Gpx GetGpx(GpmfItems gpmfItems)
 		{
+			// get the GPS items
+			string description = "";
+			string units = null;
 			GpsItems gpsItems = new GpsItems();
 			GpmfItems strmItems = gpmfItems.GetItems("STRM");
 			foreach (GpmfItem item in strmItems)
@@ -83,77 +85,73 @@ namespace FrozenNorth.Gpmf
 				GpmfItem gps5 = strm.Find("GPS5");
 				if (gps5 != null)
 				{
-					GpsItem gps = new GpsItem(gps5.GetIntArray(), strm.GetItemIntArray("SCAL"), strm.GetItemString("STNM"),
-												strm.GetItemDateTime("GPSU"), strm.GetItemUShort("GPSP") / 100.0,
-												strm.GetItemUInt("GPSF"), strm.GetItemStringArray("UNIT"));
+					GpsItem gps = new GpsItem(gps5.GetIntArray(), strm.GetItemIntArray("SCAL"), strm.GetItemDateTime("GPSU"),
+												strm.GetItemUShort("GPSP") / 100.0, strm.GetItemUInt("GPSF"));
 					gpsItems.Add(gps);
-				}
-			}
-			return gpsItems;
-		}
+					if (string.IsNullOrEmpty(description))
+					{
+						string desc = strm.GetItemString("STNM");
+						if (!string.IsNullOrEmpty(desc))
+						{
+							description = desc;
+						}
+                    }
+                    if (string.IsNullOrEmpty(units))
+                    {
+                        string[] un = strm.GetItemStringArray("UNIT");
+                        if (un != null && un.Length > 0)
+                        {
+                            units = string.Join(",", un);
+                        }
+                    }
+                }
+            }
 
-		/// <summary>
-		/// Saves a list of GPS items to a GPX file.
-		/// </summary>
-		/// <param name="videoFileName">Full path and name of the existing MP4 file.</param>
-		/// <param name="gpxFileName">Full path and name of the GPX file to be created.</param>
-		/// <param name="creator">Name of the program saving this file.</param>
-		/// <param name="deviceName">Name of the device that the video file was created by.</param>
-		/// <param name="items">List of GPS items.</param>
-		/// <returns>Number of GPS coordinates that were saved.</returns>
-		public static int SaveGPX(string videoFileName, string gpxFileName, string creator, string deviceName, GpsItems items)
-		{
-			int numCoords = 0;
-			XmlWriterSettings settings = new XmlWriterSettings()
+			// create a GPX object containing the GPS points
+			var gpx = new Gpx.Gpx();
+			var track = new GpxTrack();
+			track.Description = description;
+			if (!string.IsNullOrEmpty(units))
 			{
-				Indent = true,
-				IndentChars = "\t"
-			};
-			XNamespace ns = "http://www.topografix.com/GPX/1/1";
-			XmlWriter textWriter = XmlTextWriter.Create(gpxFileName, settings);
-			textWriter.WriteStartDocument();
-			textWriter.WriteStartElement("gpx", "http://www.topografix.com/GPX/1/1");
-			textWriter.WriteAttributeString("version", "1.1");
-			textWriter.WriteAttributeString("creator", creator);
-			textWriter.WriteStartElement("trk");
-			textWriter.WriteElementString("name", Path.GetFileName(videoFileName));
-			textWriter.WriteElementString("desc", items[0].Description + " - [" + items[0].UnitsString + "]");
-			textWriter.WriteElementString("src", deviceName);
-			textWriter.WriteStartElement("trkseg");
-			for (int i = 0; i < items.Count; i++)
+                if (!string.IsNullOrEmpty(track.Description))
+				{
+					track.Description += " - ";
+                }
+				track.Description += "[" + units + "]";
+            }
+            track.Source = GetDeviceName(gpmfItems);
+            var segment = new GpxTrackSegment();
+			track.Segments.Add(segment);
+			gpx.Tracks.Add(track);
+            for (int i = 0; i < gpsItems.Count; i++)
 			{
-				GpsItem gps = items[i];
+				GpsItem gps = gpsItems[i];
 				DateTime gpsTime = gps.Time;
 				double seconds = 1;
-				if (i < items.Count - 1)
+				if (i < gpsItems.Count - 1)
 				{
-					seconds = (items[i + 1].Time - gps.Time).TotalSeconds;
+					seconds = (gpsItems[i + 1].Time - gps.Time).TotalSeconds;
 				}
 				else if (i > 0)
 				{
-					seconds = (gps.Time - items[i - 1].Time).TotalSeconds;
-				}
+                    seconds = (gpmfItems.Duration - (gps.Time - gpsItems[0].Time)).TotalSeconds;
+					if (seconds <= 0 || seconds >= 2)
+					{
+                        seconds = (gps.Time - gpsItems[i - 1].Time).TotalSeconds;
+                    }
+                }
 				TimeSpan interval = TimeSpan.FromSeconds(seconds / gps.Coords.Count);
 				foreach (GpsCoord coord in gps.Coords)
 				{
-					textWriter.WriteStartElement("trkpt");
-					textWriter.WriteAttributeString("lat", coord.Latitude.ToString());
-					textWriter.WriteAttributeString("lon", coord.Longitude.ToString());
-					textWriter.WriteElementString("ele", coord.Altitude.ToString());
-					textWriter.WriteElementString("time", gpsTime.ToString("o"));
-					textWriter.WriteElementString("fix", gps.Fix.ToString() + "d");
-					textWriter.WriteElementString("hdop", gps.Precision.ToString());
-					textWriter.WriteEndElement();
+					GpxFix fix = GpxFix.None;
+					if (gps.Fix == 2) fix = GpxFix.TwoD;
+					else if (gps.Fix == 3) fix = GpxFix.ThreeD;
+					var point = new GpxPoint(coord.Latitude, coord.Longitude, coord.Elevation, gpsTime, fix, gps.Precision);
+					segment.Points.Add(point);
 					gpsTime += interval;
-					numCoords++;
 				}
 			}
-			textWriter.WriteEndElement();
-			textWriter.WriteEndElement();
-			textWriter.WriteEndElement();
-			textWriter.WriteEndDocument();
-			textWriter.Close();
-			return numCoords;
+			return gpx;
 		}
 	}
 }
