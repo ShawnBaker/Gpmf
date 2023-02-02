@@ -15,7 +15,7 @@ namespace FrozenNorth.Gpmf
 		/// </summary>
 		/// <param name="packet">AVPacket to parse the data of.</param>
 		/// <returns>List of GPMF items.</returns>
-		public static GpmfItems GetItems(AVPacket packet)
+		public static GpmfItemList GetItems(AVPacket packet)
 		{
 			IntPtr ptr = (IntPtr)packet.data;
 			return GetItems(ref ptr, packet.size);
@@ -27,9 +27,9 @@ namespace FrozenNorth.Gpmf
 		/// <param name="ptr">Pointer to the data to parse.</param>
 		/// <param name="len">Length of the data.</param>
 		/// <returns>List of GPMF items.</returns>
-		public static GpmfItems GetItems(ref IntPtr ptr, int len)
+		public static GpmfItemList GetItems(ref IntPtr ptr, int len)
 		{
-			GpmfItems items = new GpmfItems();
+			GpmfItemList items = new GpmfItemList();
 			int n = 0;
 			while (n < len)
 			{
@@ -53,7 +53,7 @@ namespace FrozenNorth.Gpmf
 			switch (item.TypeSize.Type)
 			{
 				case '\0':
-					GpmfItems items = GetItems(ref ptr, item.TypeSize.Size);
+					GpmfItemList items = GetItems(ref ptr, item.TypeSize.Size);
 					ptr += item.TypeSize.RoundedSize - item.TypeSize.Size;
 					return items;
 				case 'c':
