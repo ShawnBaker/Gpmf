@@ -15,9 +15,9 @@ namespace FrozenNorth.Gpmf
 		/// </summary>
 		/// <param name="fileName">Full path and file name.</param>
 		/// <returns>List of GPMF items.</returns>
-		public static GpmfItems LoadMP4(string fileName)
+		public static GpmfItemList LoadMP4(string fileName)
 		{
-			GpmfItems gpmfItems = new GpmfItems();
+			GpmfItemList gpmfItems = new GpmfItemList();
 			AVFormatContext* formatContext = ffmpeg.avformat_alloc_context();
 			ffmpeg.avformat_open_input(&formatContext, fileName, null, null);
 			ffmpeg.avformat_find_stream_info(formatContext, null);
@@ -36,7 +36,7 @@ namespace FrozenNorth.Gpmf
 						{
 							if (p.stream_index == i)
 							{
-								GpmfItems items = GpmfParser.GetItems(p);
+								GpmfItemList items = GpmfParser.GetItems(p);
 								gpmfItems.AddRange(items);
 							}
 							ffmpeg.av_packet_unref(&p);
@@ -53,9 +53,9 @@ namespace FrozenNorth.Gpmf
 		/// <param name="gpmfItems">List of GPMF items to search through.</param>
 		/// <param name="defaultName">Default device name if one isn't found.</param>
 		/// <returns>Device name.</returns>
-		public static string GetDeviceName(GpmfItems gpmfItems, string defaultName = "GoPro")
+		public static string GetDeviceName(GpmfItemList gpmfItems, string defaultName = "GoPro")
 		{
-			GpmfItems dvnmItems = gpmfItems.GetItems("DVNM");
+			GpmfItemList dvnmItems = gpmfItems.GetItems("DVNM");
 			foreach (GpmfItem item in dvnmItems)
 			{
 				string name = item.GetString();
@@ -72,29 +72,40 @@ namespace FrozenNorth.Gpmf
 		/// </summary>
 		/// <param name="gpmfItems">List of GPMF items to search through.</param>
 		/// <returns>Gpx object.</returns>
-		public static Gpx.Gpx GetGpx(GpmfItems gpmfItems)
+		public static Gpx.Gpx GetGpx(GpmfItemList gpmfItems)
 		{
 			// get the GPS items
 			string description = "";
 			string units = null;
-			GpsItems gpsItems = new GpsItems();
-			GpmfItems strmItems = gpmfItems.GetItems("STRM");
+			Gps5ItemList gps5Items = new Gps5ItemList();
+            Gps9ItemList gps9Items = new Gps9ItemList();
+            GpmfItemList strmItems = gpmfItems.GetItems("STRM");
 			foreach (GpmfItem item in strmItems)
 			{
-				GpmfItems strm = item.Payload as GpmfItems;
-				GpmfItem gps5 = strm.Find("GPS5");
-				if (gps5 != null)
+				GpmfItemList strm = item.Payload as GpmfItemList;
+                GpmfItem gps5 = strm.Find("GPS5");
+                GpmfItem gps9 = strm.Find("GPS9");
+                if (gps5 != null)
 				{
-					GpsItem gps = new GpsItem(gps5.GetIntArray(), strm.GetItemIntArray("SCAL"), strm.GetItemDateTime("GPSU"),
+					Gps5Item gps = new Gps5Item(gps5.GetIntArray(), strm.GetItemIntArray("SCAL"), strm.GetItemDateTime("GPSU"),
 												strm.GetItemUShort("GPSP") / 100.0, strm.GetItemUInt("GPSF"));
-					gpsItems.Add(gps);
-					if (string.IsNullOrEmpty(description))
-					{
-						string desc = strm.GetItemString("STNM");
-						if (!string.IsNullOrEmpty(desc))
-						{
-							description = desc;
-						}
+					gps5Items.Add(gps);
+                }
+				if (gps9 != null)
+				{
+                    Gps9Item gps = new Gps9Item((byte[])gps9.Payload, strm.GetItemIntArray("SCAL"));
+					gps9Items.Add(gps);
+
+                }
+                if (gps5 != null || gps9 != null)
+				{
+                    if (string.IsNullOrEmpty(description))
+                    {
+                        string desc = strm.GetItemString("STNM");
+                        if (!string.IsNullOrEmpty(desc))
+                        {
+                            description = desc;
+                        }
                     }
                     if (string.IsNullOrEmpty(units))
                     {
@@ -107,8 +118,8 @@ namespace FrozenNorth.Gpmf
                 }
             }
 
-			// create a GPX object containing the GPS points
-			var gpx = new Gpx.Gpx();
+            // create a GPX object containing the GPS points
+            var gpx = new Gpx.Gpx();
 			var track = new GpxTrack();
 			track.Description = description;
 			if (!string.IsNullOrEmpty(units))
@@ -123,32 +134,50 @@ namespace FrozenNorth.Gpmf
             var segment = new GpxTrackSegment();
 			track.Segments.Add(segment);
 			gpx.Tracks.Add(track);
-            for (int i = 0; i < gpsItems.Count; i++)
+			if (gps9Items != null)
 			{
-				GpsItem gps = gpsItems[i];
-				DateTime gpsTime = gps.Time;
-				double seconds = 1;
-				if (i < gpsItems.Count - 1)
+				for (int i = 0; i < gps9Items.Count; i++)
 				{
-					seconds = (gpsItems[i + 1].Time - gps.Time).TotalSeconds;
-				}
-				else if (i > 0)
-				{
-                    seconds = (gpmfItems.Duration - (gps.Time - gpsItems[0].Time)).TotalSeconds;
-					if (seconds <= 0 || seconds >= 2)
-					{
-                        seconds = (gps.Time - gpsItems[i - 1].Time).TotalSeconds;
+					Gps9Item gps = gps9Items[i];
+                    foreach (GpsCoord coord in gps.Coords)
+                    {
+                        GpxFix fix = GpxFix.None;
+                        if (coord.Fix == 2) fix = GpxFix.TwoD;
+                        else if (coord.Fix == 3) fix = GpxFix.ThreeD;
+                        var point = new GpxPoint(coord.Latitude, coord.Longitude, coord.Elevation, coord.Time, fix, coord.Precision);
+                        segment.Points.Add(point);
                     }
                 }
-				TimeSpan interval = TimeSpan.FromSeconds(seconds / gps.Coords.Count);
-				foreach (GpsCoord coord in gps.Coords)
+            }
+			else
+			{
+				for (int i = 0; i < gps5Items.Count; i++)
 				{
-					GpxFix fix = GpxFix.None;
-					if (gps.Fix == 2) fix = GpxFix.TwoD;
-					else if (gps.Fix == 3) fix = GpxFix.ThreeD;
-					var point = new GpxPoint(coord.Latitude, coord.Longitude, coord.Elevation, gpsTime, fix, gps.Precision);
-					segment.Points.Add(point);
-					gpsTime += interval;
+					Gps5Item gps = gps5Items[i];
+					DateTime gpsTime = gps.Time;
+					double seconds = 1;
+					if (i < gps5Items.Count - 1)
+					{
+						seconds = (gps5Items[i + 1].Time - gps.Time).TotalSeconds;
+					}
+					else if (i > 0)
+					{
+						seconds = (gpmfItems.Duration - (gps.Time - gps5Items[0].Time)).TotalSeconds;
+						if (seconds <= 0 || seconds >= 2)
+						{
+							seconds = (gps.Time - gps5Items[i - 1].Time).TotalSeconds;
+						}
+					}
+					TimeSpan interval = TimeSpan.FromSeconds(seconds / gps.Coords.Count);
+					foreach (GpsCoord coord in gps.Coords)
+					{
+						GpxFix fix = GpxFix.None;
+						if (gps.Fix == 2) fix = GpxFix.TwoD;
+						else if (gps.Fix == 3) fix = GpxFix.ThreeD;
+						var point = new GpxPoint(coord.Latitude, coord.Longitude, coord.Elevation, gpsTime, fix, gps.Precision);
+						segment.Points.Add(point);
+						gpsTime += interval;
+					}
 				}
 			}
 			return gpx;
