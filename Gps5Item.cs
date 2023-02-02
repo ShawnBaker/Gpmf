@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace FrozenNorth.Gpmf
 {
 	/// <summary>
-	/// A GPS item read from GPMF data.
+	/// A GPS item read from GPMF GPS5 data.
 	/// </summary>
-	internal class GpsItem
+	internal class Gps5Item
 	{
 		// instance variables
-		public GpsCoords Coords;
+		public GpsCoordList Coords;
 		public DateTime Time;
 		public double Precision;
 		public uint Fix;
@@ -22,9 +22,9 @@ namespace FrozenNorth.Gpmf
         /// <param name="time">Time of the first GPS point.</param>
         /// <param name="precision">Precision of the data.</param>
         /// <param name="fix">Fix value.</param>
-        internal GpsItem(int[] gps, int[] scale, DateTime time, double precision, uint fix)
+        internal Gps5Item(int[] gps, int[] scale, DateTime time, double precision, uint fix)
 		{
-			Coords = new GpsCoords();
+			Coords = new GpsCoordList();
 			for (int i = 0; i < gps.Length; i += 5)
 			{
 				GpsCoord coord = new GpsCoord(gps[i] * 1.0 / scale[0], gps[i + 1] * 1.0 / scale[1], gps[i + 2] * 1.0 / scale[2],
@@ -40,5 +40,5 @@ namespace FrozenNorth.Gpmf
     /// <summary>
     /// A list of GPS items read from GPMF data.
     /// </summary>
-    internal class GpsItems : List<GpsItem> { }
+    internal class Gps5ItemList : List<Gps5Item> { }
 }

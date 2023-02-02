@@ -6,7 +6,7 @@ namespace FrozenNorth.Gpmf
     /// <summary>
     /// A list of items read from GPMF data.
     /// </summary>
-    public class GpmfItems : List<GpmfItem>
+    public class GpmfItemList : List<GpmfItem>
 	{
 		public TimeSpan Duration = TimeSpan.Zero;
 
@@ -215,9 +215,9 @@ namespace FrozenNorth.Gpmf
 		/// </summary>
 		/// <param name="fourcc">FourCC code to search for.</param>
 		/// <returns>List of items.</returns>
-		public GpmfItems GetItems(string fourcc)
+		public GpmfItemList GetItems(string fourcc)
 		{
-			GpmfItems items = new GpmfItems();
+			GpmfItemList items = new GpmfItemList();
 			GetItems(this, fourcc, items);
 			return items;
 		}
@@ -228,7 +228,7 @@ namespace FrozenNorth.Gpmf
 		/// <param name="searchItems">List of items to search through.</param>
 		/// <param name="fourcc">FourCC code to search for.</param>
 		/// <param name="foundItems">List to add matching items to.</param>
-		private void GetItems(GpmfItems searchItems, string fourcc, GpmfItems foundItems)
+		private void GetItems(GpmfItemList searchItems, string fourcc, GpmfItemList foundItems)
 		{
 			foreach (GpmfItem item in searchItems)
 			{
@@ -238,7 +238,7 @@ namespace FrozenNorth.Gpmf
 				}
 				if (item.TypeSize.Type == 0)
 				{
-					GetItems(item.Payload as GpmfItems, fourcc, foundItems);
+					GetItems(item.Payload as GpmfItemList, fourcc, foundItems);
 				}
 			}
 		}
