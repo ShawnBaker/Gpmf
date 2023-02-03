@@ -18,6 +18,9 @@
     <AssemblyName>FrozenNorth.Gpmf</AssemblyName>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Version>1.0.1</Version>
+    <PackageReleaseNotes>Added support for the GoPro 11's GPS9 elements.
+Added the "List" suffix to all List&lt;&gt; class names.
+Upgraded the Gpx package to version 1.0.1.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
