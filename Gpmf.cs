@@ -134,7 +134,7 @@ namespace FrozenNorth.Gpmf
             var segment = new GpxTrackSegment();
 			track.Segments.Add(segment);
 			gpx.Tracks.Add(track);
-			if (gps9Items != null)
+			if (gps9Items.Count > 0)
 			{
 				for (int i = 0; i < gps9Items.Count; i++)
 				{
