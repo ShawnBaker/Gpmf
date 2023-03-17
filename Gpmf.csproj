@@ -17,10 +17,8 @@
     <PackageProjectUrl>https://github.com/ShawnBaker/Gpmf</PackageProjectUrl>
     <AssemblyName>FrozenNorth.Gpmf</AssemblyName>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Version>1.0.1</Version>
-    <PackageReleaseNotes>Added support for the GoPro 11's GPS9 elements.
-Added the "List" suffix to all List&lt;&gt; class names.
-Upgraded the Gpx package to version 1.0.1.</PackageReleaseNotes>
+    <Version>1.0.2</Version>
+    <PackageReleaseNotes>Fixed the condition that checks for the presence of GPS9 items.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +46,7 @@ Upgraded the Gpx package to version 1.0.1.</PackageReleaseNotes>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FFmpeg.AutoGen" Version="5.1.1" />
+    <PackageReference Include="FFmpeg.AutoGen" Version="5.1.2.1" />
     <PackageReference Include="FrozenNorth.Gpx" Version="1.0.1" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
