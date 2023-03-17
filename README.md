@@ -41,6 +41,8 @@ GpmfItems
 
 # Usage
 
+In order to use this library in a project, the executable program must have access to the FFmpeg DLLs. The code below assumes that your top-level project contains a folder named FFmpeg, which includes the DLLs. Each of the DLL's must have __Build Action__ set to __Content__ and __Copy to Output Directory__ set to __Copy if newer__.
+
 ```
 using FFmpeg.AutoGen;
 using FrozenNorth.Gpx;
